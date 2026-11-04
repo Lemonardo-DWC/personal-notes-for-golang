@@ -1,3 +1,5 @@
 # Summary
 
-- [Chapter 1](./chapter_1.md)
+- [Basics](./basics.md)
+- [Methods and Interfaces](./methods_and_interfaces.md)
+- [Generics](./generics.md)
