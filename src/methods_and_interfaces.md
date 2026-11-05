@@ -18,6 +18,7 @@ type Vertex struct {
 	X, Y float64
 }
 
+// Abs() has a receiver argument v of type Vertex
 func (v Vertex) Abs() float64 {
 	return math.Sqrt(v.X*v.X + v.Y*v.Y)
 }
@@ -46,7 +47,7 @@ func (f MyFloat) foo() {
 ### Pointer Receivers
 
 Methods with pointer receivers can be defined by using
-the `*T` syntax, for some type `T`. Note that `T` itself cannot
+the literal `*T` syntax, for some type `T`. Note that `T` itself cannot
 be a pointer (eg. `*int`)
 
 Methods with pointer receivers can modify the value to which the
@@ -168,7 +169,7 @@ func main() {
 	a = f  // a MyFloat implements Abser
 	a = &v // a *Vertex implements Abser
 
-	a = v
+	a = v // COMPILE ERROR
 		// v is type Vertex, not *Vertex
 		// and does not implement Abser
 	
@@ -196,8 +197,8 @@ func (v *Vertex) Abs() float64 {
 Interfaces are implemented implicitly
 
 A type implements an interface by implementing its methods.
-There is no explicit declaration of intent by using
-`implements` keyword
+There is no explicit declaration of intent by using a keyword
+like `implements`
 
 Implicit interfaces decouple the definition of an interface
 from its implementation, which could then appear in any
@@ -285,11 +286,7 @@ If the concrete value inside the interface itself is `nil`,
 the method will be called with a nil receiver
 
 In some languages this causes a null pointer exception,
-but in Go it is common to write methods that handle nil
-receivers gracefully
-
-> [!note]
-> an interface value that holds a nil concrete value is itself non-nil
+but methods in Go are commonly written to handle nil receivers gracefully
 
 ```go
 func (t *T) M() {
@@ -301,9 +298,12 @@ func (t *T) M() {
 }
 ```
 
+> [!note]
+> an interface value that holds a nil concrete value is itself non-nil
+
 ##### Nil Interface Values
 
-A nil interface value holds neither value nor concrete type
+A nil interface value holds neither a value nor concrete type
 
 Calling a method on a nil interface is a run-time error as there
 is no type inside the interface tuple to indicate which concrete
@@ -321,7 +321,7 @@ type I interface {
 func main() {
 	var i I
 	describe(i)
-	i.M()
+	i.M() // RUNTIME ERROR
 }
 
 func describe(i I) {
@@ -340,7 +340,7 @@ implements at least 0 methods)
 
 `any` is an alias for `interface{}`
 
-Empty interfaces are useful for code that handles values of unknown type.
+Empty interfaces are useful for handling values of unknown type.
 For example, `fmt.Print` takes any number of arguments of type `any`
 
 ```go
@@ -369,7 +369,7 @@ func describe(i interface{}) {
 
 #### Type Assertions
 
-Type assertions provide access to an interface's underlying value
+Type assertions provide access to an interface's underlying concrete value
 
 `t := i.(T)`
 
@@ -380,9 +380,11 @@ variable `t`
 > [!note]
 > if `i` does not hold a `T`, the statement will trigger a panic
 
-To test whether an interface holds a specific type, a type assertion
-can return two values: the underlying value and a boolean value
-that reports whether the assertion succeeded
+A type assertion returns two values, which allows for testing whether
+an interface holds a specific type:
+
+- the underlying value
+- a boolean value reporting whether or not the assertion succeeded
 
 `t, ok := i.(T)`
 
@@ -394,7 +396,7 @@ Otherwise, `ok` will be false and `t` will be the zero value of type
 
 #### Type Switches
 
-A type switch is a construct that allows for type assertions in series
+A type switch is a construct that allows for a series of type assertions
 
 ```go
 switch v := i.(type) {
@@ -458,8 +460,8 @@ type error interface {
 }
 ```
 
-Functions often return an error value, so calling code should handle
-errors by checking whether the `error` is `nil`
+Many functions return an error value, which should be checked by
+the calling code whether or not the error is `nil`
 
 ```go
 i, err := strconv.Atoi("42")
@@ -485,7 +487,7 @@ The `io.Reader` interface has a `Read` method:
 `func (T) Read(b []byte) (n int, err error)`
 
 `Read` populates the given byte slice with data and returns the number
-of bytes populated and an error value. It returns an `io.EOF` error
+of bytes populated and an error value. An `io.EOF` error is returned
 when the stream ends
 
 Example:
@@ -502,6 +504,7 @@ import (
 func main() {
 	r := strings.NewReader("Hello, Reader!")
 
+	// consumes output of r 8 bytes at a time
 	b := make([]byte, 8)
 	for {
 		n, err := r.Read(b)
@@ -515,6 +518,8 @@ func main() {
 ```
 
 Rot13 Example:
+
+[what is rot13](https://en.wikipedia.org/wiki/ROT13)
 
 ```go
 package main
@@ -560,7 +565,8 @@ func main() {
 
 #### Images
 
-[Package image](https://go.dev/pkg/image/#Image)
+Package
+[image](https://go.dev/pkg/image/#Image)
 defines the `Image` interface:
 
 ```go
@@ -577,7 +583,7 @@ type Image interface {
 > the `Rectangle` return value of the `Bounds()` method is actually
 > an `image.Rectangle`, as the declaration is inside package `image`
 
-`color.Color` and `color.Model` types are also interfaces specified
+`color.Color` and `color.Model` types are also interfaces, see their specs
 [here](https://go.dev/pkg/image/color/)
 
 Example:

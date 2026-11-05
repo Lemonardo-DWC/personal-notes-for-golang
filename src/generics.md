@@ -12,7 +12,7 @@ This declaration means `s` is a slice of any type `T` that fulfills
 the built-in constraint `comparable`. `x` is also of the same type
 
 `comparable` is a useful constraint that makes it possible to use
-the `==` and `!=` operators on values of this type
+comparison operators like `==` and `!=` on values of this type
 
 Example:
 
@@ -58,8 +58,7 @@ import (
 	"strings"
 )
 
-// List represents a singly-linked list that holds
-// values of any type.
+// List represents a singly-linked list that holds values of any type
 type List[T any] struct {
 	next *List[T]
 	val  T
@@ -72,6 +71,8 @@ type Blah struct {
 }
 
 func main() {
+
+	// create linked list of 10 items
 	head := List[Blah]{next: nil, val: Blah{"first", []int{0, 0, 0}}}
 	for i := 1; i < 10; i++ {
 		head.Push(Blah{"later", []int{i, i + 1, i + 2}})

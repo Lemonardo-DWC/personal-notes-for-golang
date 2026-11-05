@@ -9,19 +9,21 @@ A goroutine is a lightweight thread managed by the Go runtime
 go foo(x, y, z)
 ```
 
-The evaluation of `f`, `x`, `y`, and `z` happens in the current
-goroutine and the execution of `f` happens in the new goroutine
+`foo`, `x`, `y`, and `z` are evaluated in the current goroutine,
+but the execution of `foo` happens in the new goroutine
 
 Goroutines run in the same address space, thus access to shared
 memory must be synchronized
 
-The `sync` package provides useful primitives, although
-other primitives are often sufficient
+The `sync` package provides useful primitives, although there are
+other primitives that are often sufficient enough (next section)
 
 ## Channels
 
 Channels are a typed conduit through which values can be sent and
 received with the channel operator: `<-`
+
+The direction of the arrow indicates the data flow
 
 ```go
 ch <- v     // send v to channel ch
@@ -33,8 +35,8 @@ Like maps and slices, channels must be created before use:
 `ch := make(chan int)`
 
 By default, sends and receives block until the other side is ready,
-allowing goroutines to synchronize without explicit locks or
-condition variables
+which is nice for synchronizing goroutines without explicit locks
+or condition variables
 
 Example:
 
@@ -92,8 +94,9 @@ func main() {
 }
 ```
 
-Removing one of `ch <- 2`, or `fmt.Println(<-ch)` will cause
-a fatal error where all goroutines are asleep (deadlock)
+> [!tip]
+> Overfilling the buffer in this example causes a fatal error
+> where all goroutines are asleep (deadlock)
 
 ### Range and Close
 
@@ -101,12 +104,12 @@ A sender can `close` a channel to indicate that no more values
 will be sent
 
 Receivers can test whether a channel has been closed by assigning
-a second parameter to receive expression
+a second parameter to the receive expression
 
 `v, ok := <-ch`
 
 `ok` is `false` if there are no more values to receive and the channel
-is closed.
+is closed
 
 The loop `for i := range c` receives values from the channel
 repeatedly until it's closed
@@ -124,7 +127,7 @@ func fibonacci(n int, c chan int) {
 	x, y := 0, 1
 	for i := 0; i < n; i++ {
 		c <- x
-		x, y := y, x+y
+		x, y = y, x+y
 	}
 	close(c)
 }
@@ -139,14 +142,14 @@ func main() {
 ```
 
 > [!note]
-> Only the sender should close a channel, never the receiver.
-> Sending on a closed channel will cause a panic
+> Channels should only ever be closed by senders, and never
+> the receiver. Sending on a closed channel will cause a panic
 
 > [!note]
-> Channels aren't like files; usually don't need to close them.
-> Closing is only necessary when the receiver must be told
-> there are no more values coming, such as to terminate a
-> range loop
+> Unlike files, channels don't usually need to be closed.
+> It is only necessary when the receiver must be notified
+> about no more incoming values, such as to terminate a
+> `range` loop
 
 ### Select
 
@@ -160,16 +163,14 @@ are ready
 ```go
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
-func fibonacci(n int, c chan int) {
+func fibonacci(c, quit chan int) {
 	x, y := 0, 1
 	for {
 		select {
 		case c <- x:
-			x, y := y, x+y
+			x, y = y, x+y
 		case <-quit:
 			fmt.Println("quit")
 			return
@@ -195,6 +196,8 @@ func main() {
 #### Default Selection
 
 The `default` case in a `select` runs if no other case is ready
+
+Useful for trying a send or receive without blocking
 
 ```go
 select {
@@ -231,7 +234,7 @@ func main() {
 			fmt.Printf("[%6s] BOOM!\n", elapsed())
 		default:
 			fmt.Printf("[%6s]     .\n", elapsed())
-			time.Sleep(50 * time.Millisecond())
+			time.Sleep(50 * time.Millisecond)
 		}
 	}
 }
@@ -241,25 +244,26 @@ func main() {
 
 #### Equivalent binary trees
 
-Example implementation of checking if two binary trees
-store the same sequence
+Example implementation of checking if two binary trees store
+the same sequence. See docs for `Tree`
+[here](https://godoc.org/golang.org/x/tour/tree#Tree)
 
 ```go
 package main
 
 import (
 	"fmt"
-	"golang.org/x/tour/tree" // just holds a left, right, and tree node (int in this case)
+	"golang.org/x/tour/tree" // just holds a left, right, and node value (int in this case)
 )
 
-// Walk walks the tree t sending all values
-// from the tree to the channel ch.
+// Performs an in-order traversal of tree t, sending
+// all values from the tree to the channel ch.
 func Walk(t *tree.Tree, ch chan int) {
 	walker(t, ch)
 	close(ch)
 }
 
-// helper for walking the tree in-order
+// helper for in-order traversal of the tree
 func walker(t *tree.Tree, ch chan int) {
 	if t == nil {
 		return
@@ -280,14 +284,17 @@ func Same(t1, t2 *tree.Tree) bool {
 	go Walk(t1, ch1)
 	go Walk(t2, ch2)
 
+	// checks sequences in 'parallel'
 	for {
 		node1, ok1 := <-ch1
 		node2, ok2 := <-ch2
 
+		// trees of different size or sequence
 		if ok1 != ok2 || node1 != node2 {
 			return false
 		}
 
+		// finished, all good
 		if !ok1 {
 			return true
 		}
@@ -311,7 +318,7 @@ This concept is known as 'mutual exclusion', the conventional
 name for the data structure that provides it is 'mutex'
 
 Go provides mutual exclusion in its standard library with
-`sync.Mutex` and methods: `Lock` and `Unlock`
+`sync.Mutex` and methods: `Lock`, `Unlock`
 
 A block of code can be designated to be executed in mutual
 exclusion by surrounding it with a `Lock` and `Unlock` call
@@ -330,34 +337,35 @@ import (
 	"time"
 )
 
+// SafeCounter is safe to use concurrently.
 type SafeCounter struct {
 	mu sync.Mutex
-	v map[string]int
+	v  map[string]int
 }
 
+// Inc increments the counter for the given key.
 func (c *SafeCounter) Inc(key string) {
 	c.mu.Lock()
-
+	// Lock so only one goroutine at a time can access the map c.v.
 	c.v[key]++
-
 	c.mu.Unlock()
 }
 
+// Value returns the current value of the counter for the given key.
 func (c *SafeCounter) Value(key string) int {
 	c.mu.Lock()
+	// Lock so only one goroutine at a time can access the map c.v.
 	defer c.mu.Unlock()
-
 	return c.v[key]
 }
 
 func main() {
 	c := SafeCounter{v: make(map[string]int)}
-
 	for i := 0; i < 1000; i++ {
 		go c.Inc("somekey")
 	}
 
-	time.Sleep(time.Second) // just to make sure the counter gets to 1000
+	time.Sleep(time.Second) // just to make sure counter goes to 1000
 	fmt.Println(c.Value("somekey"))
 }
 ```

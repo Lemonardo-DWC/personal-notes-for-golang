@@ -2,6 +2,16 @@
 
 ## Overview
 
+### Packages
+
+Go programs are made up of packages
+
+The `main` package is where programs start running
+
+Conventionally, the package name is the same as the last element
+of the import path (eg. the `"math/rand"` package contains files
+that start with `package rand`)
+
 ### Imports
 
 ```go
@@ -16,7 +26,9 @@ import (
 
 ### Exports
 
-Names are exported if they begin with a capital letter
+Names are exported from packages if they begin with a capital letter
+
+Only exported names of imported packages can be referred to
 
 ```go
 package main
@@ -27,10 +39,10 @@ import (
 )
 
 func main() {
-	fmt.Println(math.pi)
-		// prints: ./prog.go:9:19: undefined: math.pi (but have Pi)
 	fmt.Println(math.Pi)
 		// prints: 3.141592653589793
+	fmt.Println(math.pi)
+		// prints: ./prog.go:9:19: undefined: math.pi (but have Pi)
 }
 ```
 
@@ -38,7 +50,9 @@ func main() {
 
 Functions take 0 or more arguments
 
-Types come after variable name
+Types come after variable name (see
+[Go's declaration syntax blog](https://go.dev/blog/gos-declaration-syntax)
+for more information)
 
 ```go
 func add(x int, y int) int {
@@ -50,6 +64,7 @@ When consecutive named function parameters share a type,
 the type can be omitted until the last parameter
 
 ```go
+// could use (x int, y int) instead, but it's a bit more verbose
 func add(x, y int) int {
 	return x + y
 }
@@ -62,6 +77,7 @@ package main
 
 import "fmt"
 
+// swaps two strings
 func swap(x, y string) (string, string) {
 	return y, x
 }
@@ -107,15 +123,16 @@ var c, python, java bool
 
 func main() {
 	var i int
-	fmt.Println(i, c, python, java)
-		// 0 false false false
+	fmt.Println(i, c, python, java) // 0 false false false
 }
 ```
 
 `var` declarations can include initializers with one per variable
 
 If an initializer is present, the type will be inferred if omitted.
-See [Type Inference](#type-inference)
+The later short section,
+[Type Inference](#type-inference),
+talks about this in more detail
 
 ```go
 package main
@@ -183,7 +200,7 @@ bool
 
 string
 
-int int8 int16 int32 int64
+int  int8  int16  int32  int64
 uint uint8 uint16 uint32 uint64 uintptr
 
 byte // alias for uint8
@@ -196,8 +213,11 @@ float32 float64
 complex64 complex128
 ```
 
-NOTE: `int`, `uint`, and `uintptr` types are usually 32 bits wide on
-32-bit systems and 64 bits wide on 64-bit systems
+> [!note]
+> `int`, `uint`, and `uintptr` types are usually 32 bits wide on
+> 32-bit systems and 64 bits wide on 64-bit systems. It is recommended
+> to just use `int` unless there is a specific reason to use a sized
+> or unsigned integer type
 
 #### Zero Values
 
@@ -208,6 +228,7 @@ their zero values
 0       // for numeric types
 false   // for boolean types
 ""      // for strings
+nil     // for pointers, interfaces, slices, maps, channels, functions
 ```
 
 #### Type Conversions
@@ -226,7 +247,7 @@ f := float64(i)
 u := uint(f)
 ```
 
-Assignment between items of different types require explicit conversions
+Assignment between items of different types requires explicit conversions
 
 Example:
 
@@ -254,7 +275,7 @@ Output:
 #### Type Inference
 
 When declaring a variable without specifying its type explicitly,
-the variable's type is inferred from the value on the right hand side
+the variable's type is inferred from the value it is being assigned
 
 When the right hand side is typed, the type of the new variable
 will be the same type:
@@ -264,14 +285,14 @@ var i int
 j := i // j is of type int
 ```
 
-When right hand side is an untyped numeric constant, the new variable
-may be an `int`, `float64`, or `complex128` depending on the precision of
+When assigning an untyped numeric constant, the new variable may be
+an `int`, `float64`, or `complex128` depending on the precision of
 the constant.
 
 ```go
-i := 42			// int
-f := 3.142			// float64
-g := 0.867 + 0.5i		// complex128
+i := 42                 // int
+f := 3.142              // float64
+g := 0.867 + 0.5i       // complex128
 ```
 
 ### Flow Control
@@ -288,7 +309,7 @@ Go's only looping construct
 for <init> ; <cond> ; <post> {...}
 
 for ; <cond> ; {...}
-for <cond> {...}
+for <cond> {...} // semicolons can be omitted if there's only a condition expression
 
 // infinite loop
 for {...}
@@ -346,9 +367,13 @@ if ... {
 
 #### Switch
 
-Similar to C, C++, Java, JavaScript... with no fall-through behaviour
+`switch` provides a more concise way to write sequences of
+`if - else` statements
 
-Switch cases don't need to be constants
+Similar to C, C++, Java, JavaScript except Go's `switch` has
+no fall-through behaviour
+
+Switch cases don't need to be constants (can be expressions)
 
 Values involved don't need to be integers
 
@@ -362,7 +387,7 @@ case 1:
 	...
 case "2":
 	...
-case f():
+case foo():
 	...
 default:
 	...
@@ -374,7 +399,7 @@ case 1:
 	...
 case "2":
 	...
-case f():
+case foo():
 	...
 default:
 	...
@@ -395,7 +420,7 @@ default:
 
 #### Defer
 
-Defers the execution of a function until the surrounding function returns
+Defers the execution of a function until the containing function returns
 
 Deferred call's arguments are evaluated immediately, but the function call
 is deferred
@@ -407,7 +432,10 @@ defer f(a, b)
 ```
 
 Deferred function calls are pushed onto a stack. When a function returns,
-its deferred calls are executed in LIFO order
+its deferred calls are executed in LIFO (last-in-first-out) order
+
+[This blog post](https://go.dev/blog/defer-panic-and-recover)
+talks about defer statements in more detail
 
 ```go
 package main
@@ -517,8 +545,8 @@ func main() {
 A struct literal denotes a newly allocated struct value by listing the
 values of its fields
 
-It is possible to only list a subset of fields using the `Name: value` syntax.
-Order is irrelevant
+It is possible to only list a subset of fields using the `Name: value` syntax;
+order is irrelevant when using this syntax
 
 ```go
 package main
@@ -543,7 +571,7 @@ func main() {
 
 ### Arrays / Slices
 
-The type `[n]T` is an array of n values that are type `T`
+The type `[n]T` is an array of `n` values that are type `T`
 
 Array lengths are part of its type, so they cannot be resized.
 
@@ -603,7 +631,7 @@ func main() {
 }
 ```
 
-A slice literal is like an array literal without the length
+A slice literal is just an array literal without the length
 
 ```
 // array literal
@@ -642,8 +670,8 @@ func main() {
 
 When slicing, low or high bounds may be omitted to use their defaults
 
-Slice default values are `0` for low bound, and `the underlying array length`
-for high bound
+Slice default values are 0 for the low bound, and the length of the
+underlying slice or array for the high bound
 
 ```go
 var a [10]int
@@ -660,7 +688,8 @@ Slices have a `length` and `capacity`
 The length is the number of elements it contains
 
 The capacity is the number of elements in the underlying array, counting from
-the first element in the slice
+the first element in the slice - in other words, the maximum possible length
+of the current slice
 
 The length and capacity of a slice `s` can be obtained by: `len(s)` and `cap(s)`
 
@@ -774,7 +803,10 @@ func main() {
 
 #### Appending to Slices
 
-New elements can be appended to slices using the `append()` function
+New elements can be appended to slices using the `append()` function - check
+the documentation of the built-in package
+[here](https://go.dev/pkg/builtin/#append)
+for more details
 
 ```go
 func append(s []T, vs ...T) []T
@@ -782,8 +814,8 @@ func append(s []T, vs ...T) []T
 
 `s` is the slice to append to, the rest are `T` values to append to the slice
 
-Resulting value of `append()` is a slice containing all elements of the original
-slice plus the provided values
+The resulting value of `append()` is a slice containing all elements of the original
+slice, followed by the additionally provided values
 
 If the backing array of `s` is too small, a larger array will be allocated.
 The returned slice will point to the newly allocated array
@@ -793,8 +825,8 @@ The returned slice will point to the newly allocated array
 
 The `range` form of the `for` loop iterates over a slice or map
 
-When ranging over a slice, two values are returned each iteration,
-an index and a copy of the element at that index
+When ranging over a slice, two values are returned each iteration:
+an index, and a copy of the element at that index
 
 ```go
 package main
@@ -840,7 +872,7 @@ func main() {
 
 ### Maps
 
-Maps map keys to values
+Maps map keys to values (key-value pairs)
 
 Zero value of a map is `nil`. A `nil` map has no keys, nor can keys be added
 
@@ -856,7 +888,7 @@ type Vertex struct {
 	Lat, Long float64
 }
 
-var m map[string]Vertex
+var m map[string]Vertex // a map that maps string to Vertex
 
 func main() {
 	m = make(map[string]Vertex)
@@ -936,7 +968,7 @@ elem, ok := m[key]
 
 ### Functions++
 
-Functions are values too, they can be passed around like any other values
+Functions are values too, and thus can be passed around
 
 Function values may be used as arguments and return values of other functions
 
@@ -948,11 +980,14 @@ import (
 	"math"
 )
 
+// compute() takes a function that operates on floats to return a float
 func compute(fn func(float64, float64) float64) float64 {
 	return fn(3, 4)
 }
 
 func main() {
+
+	// hypot holds a function that takes 2 floats and returns a float
 	hypot := func(x, y float64) float64 {
 		return math.Sqrt(x*x + y*y)
 	}
@@ -1050,7 +1085,7 @@ func fibonacci() func() int {
 	return func() int {
 		defer func() {
 			previous, current = current, current+previous
-		}()
+		}() // anonymous function call
 		return previous
 	}
 }
@@ -1062,9 +1097,6 @@ func main() {
 	}
 }
 ```
-
-NOTE: apparently using defer for purposes other than clean up is unconventional
-
 
 ## More Resources
 

@@ -6,7 +6,9 @@
 > with some personal modifications and solutions to some exercises.
 >
 > This project is not affiliated with, sponsored by, or endorsed by the
-> Go project or Google. Corrections and suggestions are welcome via
+> Go project or Google.
+>
+> Corrections and suggestions are welcome via
 > issues or pull requests.
 
 This project uses [mdBook](https://github.com/rust-lang/mdbook)
