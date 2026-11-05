@@ -14,6 +14,8 @@
 This project uses [mdBook](https://github.com/rust-lang/mdbook)
 to generate static files which are hosted on Github Pages.
 
+> [link to book](https://lemonardo-dwc.github.io/personal-notes-for-golang/)
+
 ## License
 
 My own notes and code are licensed under the BSD 3-Clause License
