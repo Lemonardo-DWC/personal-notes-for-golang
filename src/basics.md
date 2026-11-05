@@ -1066,7 +1066,6 @@ func main() {
 NOTE: apparently using defer for purposes other than clean up is unconventional
 
 
-
 ## More Resources
 
 - [Declaration Syntax](https://go.dev/blog/gos-declaration-syntax)
