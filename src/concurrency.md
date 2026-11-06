@@ -1,5 +1,7 @@
 # Concurrency
 
+Notes created by following the corresponding section of the official Go tour
+
 ## Goroutines
 
 A goroutine is a lightweight thread managed by the Go runtime
@@ -16,7 +18,7 @@ Goroutines run in the same address space, thus access to shared
 memory must be synchronized
 
 The `sync` package provides useful primitives, although there are
-other primitives that are often sufficient enough (next section)
+other primitives that are often sufficient (next section)
 
 ## Channels
 
@@ -232,6 +234,7 @@ func main() {
 			fmt.Printf("[%6s] tick.\n", elapsed())
 		case <-boom:
 			fmt.Printf("[%6s] BOOM!\n", elapsed())
+			return
 		default:
 			fmt.Printf("[%6s]     .\n", elapsed())
 			time.Sleep(50 * time.Millisecond)

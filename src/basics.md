@@ -1,5 +1,7 @@
 # Basics
 
+Notes created by following the corresponding section of the official Go tour
+
 ## Overview
 
 ### Packages

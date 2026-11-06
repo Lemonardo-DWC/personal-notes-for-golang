@@ -1,5 +1,7 @@
 # Methods and Interfaces
 
+Notes created by following the corresponding section of the official Go tour
+
 ## Methods
 
 Go has no classes, but it's possible to define methods on types
@@ -460,8 +462,9 @@ type error interface {
 }
 ```
 
-Many functions return an error value, which should be checked by
-the calling code whether or not the error is `nil`
+It is common for functions to return an error value; calling
+code should implement checks for whether or not the error
+is `nil` as needed
 
 ```go
 i, err := strconv.Atoi("42")

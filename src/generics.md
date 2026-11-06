@@ -1,5 +1,7 @@
 # Generics
 
+Notes created by following the corresponding section of the official Go tour
+
 ## Type Parameters
 
 Go functions can work on multiple types by using type parameters
