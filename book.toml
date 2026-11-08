@@ -4,4 +4,23 @@ authors = ["le.monardo"]
 language = "en"
 
 [output.html]
+mathjax-support = true
 site-url = "/personal-notes-for-golang/"
+git-repository-url = "https://github/Lemonardo-DWC/personal-notes-for-golang/tree/main/"
+hash-files = true
+
+[output.html.playground]
+editable = true
+line-numbers = true
+
+[output.html.code.hidelines]
+python = "~"
+
+[output.html.search]
+limit-results = 20
+use-boolean-and = true
+boost-title = 2
+boost-hierarchy = 2
+boost-paragraph = 1
+expand = true
+heading-split-level = 2
