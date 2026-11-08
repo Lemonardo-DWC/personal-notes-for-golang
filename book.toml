@@ -2,3 +2,6 @@
 title = "Lemonardo's Personal Notes for Go"
 authors = ["le.monardo"]
 language = "en"
+
+[output.html]
+site-url = "/personal-notes-for-golang/"
