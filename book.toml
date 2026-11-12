@@ -4,9 +4,8 @@ authors = ["le.monardo"]
 language = "en"
 
 [output.html]
-mathjax-support = true
 site-url = "/personal-notes-for-golang/"
-git-repository-url = "https://github/Lemonardo-DWC/personal-notes-for-golang/tree/main/"
+git-repository-url = "https://github.com/Lemonardo-DWC/personal-notes-for-golang/tree/main/"
 hash-files = true
 
 [output.html.playground]

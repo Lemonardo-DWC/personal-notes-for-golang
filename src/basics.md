@@ -26,7 +26,7 @@ import (
 )
 ```
 
-### Exports
+### Exports {#exported-names}
 
 Names are exported from packages if they begin with a capital letter
 
